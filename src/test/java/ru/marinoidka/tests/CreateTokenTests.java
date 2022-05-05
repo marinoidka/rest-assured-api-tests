@@ -1,12 +1,17 @@
 package ru.marinoidka.tests;
 
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.marinoidka.dao.CreateTokenRequest;
 import ru.marinoidka.dao.CreateTokenResponse;
+import ru.marinoidka.tests.base.BaseTest;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,25 +25,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
+@Story("create a token")
+@Feature("Tests for creating token for booking")
 
-public class CreateTokenTests {
-    private static final String PROPERTIES_FILE_PATH = "src/test/resources/application.properties";
-    private static CreateTokenRequest request;
-    static Properties properties = new Properties();
-    static private String baseUrl;
-
-    @BeforeAll
-    static void beforeAll() throws IOException {
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
-        request = CreateTokenRequest.builder()
-                .username("admin")
-                .password("password123")
-                .build();
-
-        properties.load(new FileInputStream(PROPERTIES_FILE_PATH));
-        RestAssured.baseURI = properties.getProperty("base.url");
-    }
+public class CreateTokenTests extends BaseTest {
 
     @Test
     void createTokenPositiveTest() {

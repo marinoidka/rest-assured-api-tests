@@ -1,6 +1,10 @@
 package ru.marinoidka.tests;
 
 import com.github.javafaker.Faker;
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Step;
+import io.qameta.allure.Story;
 import io.restassured.RestAssured;
 import io.restassured.mapper.ObjectMapperType;
 import io.restassured.response.Response;
@@ -11,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import ru.marinoidka.dao.Bookingdates;
 import ru.marinoidka.dao.CreateBookingRequest;
 import ru.marinoidka.dao.CreateTokenRequest;
+import ru.marinoidka.tests.base.BaseTest;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,12 +28,14 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static ru.marinoidka.tests.CreateTokenTests.properties;
+import static ru.marinoidka.tests.base.BaseTest.PROPERTIES_FILE_PATH;
 
-public class PatchBookingTests {
+@Story("patch a booking")
+@Feature("Tests for booking patching")
 
-    private static String token;
+public class PatchBookingTests extends BaseTest {
+
     private String id;
-    private static final String PROPERTIES_FILE_PATH = "src/test/resources/application.properties";
     Faker faker = new Faker();
 
     CreateBookingRequest jsonStringNewFirstname = CreateBookingRequest.builder()
@@ -59,37 +66,9 @@ public class PatchBookingTests {
             .additionalneeds(String.valueOf(faker.gameOfThrones().toString()))
             .build();
 
-    @BeforeAll
-    static void beforeAll() throws IOException {
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
-        CreateTokenRequest request = CreateTokenRequest.builder()
-                .username("admin")
-                .password("password123")
-                .build();
-
-        properties.load(new FileInputStream(PROPERTIES_FILE_PATH));
-        RestAssured.baseURI = properties.getProperty("base.url");
-
-        token = given()//предусловия, подготовка
-                .log()
-                .all()
-                .header("Content-Type", "application/json")
-                .body(request)
-                .expect()
-                .statusCode(200)
-                .body("token", is(CoreMatchers.not(nullValue())))
-                .when()
-                .post("auth")//шаг(и)
-                .prettyPeek()
-                .body()
-                .jsonPath()
-                .get("token")
-                .toString();
-    }
-
 
     @BeforeEach
+    @Step("create a standart booking")
     void setUp() {
         CreateBookingRequest bookingRequest = CreateBookingRequest.builder()
                 .firstname(properties.getProperty("firstname"))
@@ -121,6 +100,8 @@ public class PatchBookingTests {
     }
 
     @Test
+    @Step("patch an existing booking with firstname")
+    @Description("random name")
     void patchBookingFirstnamePositiveTest() {
 
         Response response = given()
@@ -139,6 +120,8 @@ public class PatchBookingTests {
     }
 
     @Test
+    @Step("patch an existing booking with lastname and totalprice")
+    @Description("random lastname and number from 0 to 44444")
     void patchBookingTwoParamPositiveTest() {
         Response response = given()
                 .log()
@@ -156,6 +139,8 @@ public class PatchBookingTests {
     }
 
     @Test
+    @Step("patch an existing booking with checkin only")
+    @Description("random date")
     void patchBookingCheckInPositiveTest() {
 
         Response response = given()
@@ -175,6 +160,8 @@ public class PatchBookingTests {
     }
 
     @Test
+    @Step("patch an existing booking with all fields")
+    @Description("all random fields except depositpaid from properties")
     void patchAllBookingPositiveTest() {
         Response response = given()
                 .log()
@@ -196,6 +183,7 @@ public class PatchBookingTests {
     }
 
     @Test
+    @Step("patch an existing booking without token")
     void patchBookingWithoutTokenNegativeTest() {
 
         Response response = given()
@@ -213,6 +201,7 @@ public class PatchBookingTests {
     }
 
     @Test
+    @Step("patch booking using url without id")
     void patchBookingWithoutIdNegativeTest() {
         Response response = given()
                 .log()

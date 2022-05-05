@@ -1,6 +1,7 @@
 package ru.marinoidka.tests;
 
 import com.github.javafaker.Faker;
+import io.qameta.allure.*;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import ru.marinoidka.dao.Bookingdates;
 import ru.marinoidka.dao.CreateBookingRequest;
 import ru.marinoidka.dao.CreateTokenRequest;
+import ru.marinoidka.tests.base.BaseTest;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,44 +25,19 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static ru.marinoidka.tests.CreateTokenTests.properties;
+import static ru.marinoidka.tests.base.BaseTest.PROPERTIES_FILE_PATH;
 
-public class DeleteBookingTests {
-    private static String token;
+@Severity(SeverityLevel.BLOCKER)
+@Story("delete a booking")
+@Feature("Tests for booking deletion")
+
+public class DeleteBookingTests extends BaseTest {
+
     private String id;
-    private static final String PROPERTIES_FILE_PATH = "src/test/resources/application.properties";
     Faker faker = new Faker();
     int idNonExisted = faker.number().numberBetween(10000, 39999);
     String stuff = faker.beer().toString();
 
-    @BeforeAll
-    static void beforeAll() throws IOException {
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
-        CreateTokenRequest request = CreateTokenRequest.builder()
-                .username("admin")
-                .password("password123")
-                .build();
-
-
-        properties.load(new FileInputStream(PROPERTIES_FILE_PATH));
-        RestAssured.baseURI = properties.getProperty("base.url");
-
-        token = given()//предусловия, подготовка
-                .log()
-                .all()
-                .header("Content-Type", "application/json")
-                .body(request)
-                .expect()
-                .statusCode(200)
-                .body("token", is(CoreMatchers.not(nullValue())))
-                .when()
-                .post("auth")//шаг(и)
-                .prettyPeek()
-                .body()
-                .jsonPath()
-                .get("token")
-                .toString();
-    }
 
     @BeforeEach
     void setUp() {
@@ -93,6 +70,7 @@ public class DeleteBookingTests {
     }
 
     @Test
+    @Step("delete an existing booking")
     void deleteBookingPositiveTest() {
         given()
                 .log()
@@ -106,6 +84,7 @@ public class DeleteBookingTests {
     }
 
     @Test
+    @Step("delete non existed booking negative test")
     void deleteNonExistedBookingNegativeTest() {
         Response response = given()
                 .log()
@@ -119,6 +98,7 @@ public class DeleteBookingTests {
     }
 
     @Test
+    @Step("delete booking without id")
     void deleteEmptyBookingNegativeTest() {
         Response response = given()
                 .log()
@@ -132,6 +112,7 @@ public class DeleteBookingTests {
     }
 
     @Test
+    @Step("delete booking with wrong URL")
     void deleteStuffBookingNegativeTest() {
         Response response = given()
                 .log()
